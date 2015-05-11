@@ -1,4 +1,4 @@
-#require "factory/version"
+require "factory/version"
 
 module Factory
   # Your code goes here...
@@ -10,18 +10,27 @@ module Factory
           class_fields.each_with_index { |elem, index|
             res_class.instance_variable_set("@#{elem}", instants_fields[index])
           }
-
         end
+
+        class_fields.each { |field|
+          define_method field do
+            res_class.instance_variable_get("@#{field}")
+          end
+        }        
 
         define_method :[] do |field|
-          res_class.instance_variable_get("@#{field}")
-          #вставь проверку классов!!!
+          case field
+            when String, Symbol
+              res_class.instance_variable_get("@#{field}")
+            when Fixnum
+              var_name = res_class.instance_variables[field]
+              res_class.instance_variable_get(var_name)
+            else
+              raise TypeError, 'Wrong type of index'
+          end
         end
 
-        define_method :to_s do |field|
-          res_class.instance_variable_get("@#{field}")
-        end
-
+        class_eval &block if block_given?
 
       end
 
@@ -30,18 +39,3 @@ module Factory
   end
 
 end
-
-
-Customer = Factory::Factory.new(:name, :address, :zip)
-#=> Customer
-
-joe = Customer.new("Joe Smith", "123 Maple, Anytown NC", 12345)
-#=> #<struct Customer name="Joe Smith", address="123 Maple, Anytown NC", zip=12345>
-
-joe["name"]
-joe[:name]
-joe[0]
-joe.name
-#=> "Joe Smith"
-=begin
-=end
