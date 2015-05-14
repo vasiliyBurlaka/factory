@@ -14,7 +14,6 @@ puts joe[0]
 #=> "Joe Smith"
 
 Customer1 = Factory::Factory.new(:name, :address) do
-  public
   def greeting
     "Hello #{name}!"
   end
